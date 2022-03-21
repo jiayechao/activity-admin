@@ -12,7 +12,8 @@ const config = {
   },
   chainWebpack: config => {
     config.resolve.alias
-      .set('@', resolve('client'))
+      .set('@client', resolve('client'))
+      .set('@common', resolve('common'))
     
     // 扩展 webpack 配置
     config.module

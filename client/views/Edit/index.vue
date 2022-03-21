@@ -1,12 +1,7 @@
 <template>
   <el-container>
   <el-aside width="200px">
-    <h4>组件库</h4>
-    <div class="components-lib-item" v-for="(element,i) in components" :key="i"
-          @click="handleClick(element)">
-      <div class="lib-item-img"><i :class="[element.icon]"></i></div>
-      <p class="lib-item-title">{{element.title}}</p>
-    </div>
+    <component-list></component-list>
   </el-aside>
   <el-main>
     <edit-area></edit-area>
@@ -18,36 +13,21 @@
 </template>
 
 <script>
-import {componentList} from '@/plugins'
+import {componentList} from '@client/plugins'
 import {camelCase} from 'lodash'
 
 export default {
   components: {
-    EditArea: () => import('@/components/EditArea/index.vue'),
-    EditAttr: () => import('@/components/EditAttr/index.vue'),
+    EditArea: () => import('@client/components/EditArea/index.vue'),
+    EditAttr: () => import('@client/components/EditAttr/index.vue'),
+    ComponentList: () => import('./components/ComponentList/index.vue')
+  },
+  created() {
+    this.$store.dispatch('setPrjectData')
   },
   data() {
     return {
-      components: [
-        {
-          icon: 'el-icon-finished',
-          title: '文本',
-          elName: 'ad-text',
-          valueType: '', // 标识数据类型，用于表单组件
-          defaultStyle: {
-            height: 40
-          }
-        },
-        {
-          icon: 'el-icon-img',
-          title: 'img',
-          elName: 'ad-img',
-          valueType: '', // 标识数据类型，用于表单组件
-          defaultStyle: {
-            height: 40
-          }
-        }
-      ]
+      
     }
   },
   methods: {
@@ -85,10 +65,5 @@ export default {
 </script>
 
 <style scope>
-.components-lib-item {
-  border: 1px solid #ccc;
-  width: 60px;
-  height: 60px;
-  margin: 0 20px 20px 0;
-}
+
 </style>
