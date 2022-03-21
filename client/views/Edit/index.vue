@@ -1,12 +1,12 @@
 <template>
   <el-container>
-  <el-aside width="200px">
+  <el-aside width="300px">
     <component-list></component-list>
   </el-aside>
   <el-main>
     <edit-area></edit-area>
   </el-main>
-  <el-aside width="200px">
+  <el-aside width="300px">
     <edit-attr></edit-attr>
   </el-aside>
 </el-container>
@@ -18,8 +18,8 @@ import {camelCase} from 'lodash'
 
 export default {
   components: {
-    EditArea: () => import('@client/components/EditArea/index.vue'),
-    EditAttr: () => import('@client/components/EditAttr/index.vue'),
+    EditArea: () => import('./components/EditArea/index.vue'),
+    EditAttr: () => import('./components/EditAttr/index.vue'),
     ComponentList: () => import('./components/ComponentList/index.vue')
   },
   created() {

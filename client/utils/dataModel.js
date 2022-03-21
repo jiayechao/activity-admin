@@ -2,7 +2,7 @@ import { create_UUID } from '@common/utils'
 import { cloneDeep, merge } from "lodash";
 import {global_config} from '@client/config'
 
-// 元素配置信息字段
+// 元素所有的配置字段
 let elementConfig = {
 	elName: '', // 组件名
 	animations: [], // 动画
@@ -67,7 +67,7 @@ let projectConfig = {
 	pages: []
 }
 
-
+// 创建一个元素，为这个元素加上配置参数
 let getElementConfig = function (element, extendStyle = {}) {
 	let elementData = cloneDeep(element)
 	let type = elementData.valueType || 'String' // 默认string类型
@@ -94,6 +94,7 @@ let getElementConfig = function (element, extendStyle = {}) {
 	config.valueType = type;
 	return config;
 }
+// 复制一个元素
 let copyElement = function(element, extendStyle = {}){
 	element = cloneDeep(element)
 	element.uuid = create_UUID();
@@ -104,21 +105,25 @@ let copyElement = function(element, extendStyle = {}){
 	return element
 }
 
+// 初始化一个页面配置
 let getPageConfig = function () {
 	return {
 		uuid: create_UUID(),
 		...cloneDeep(pageConfig)
 	}
 }
+// 复制一个页面
 let copyPage = function(data){
 	let pageData = cloneDeep(data);
 	pageData.uuid = create_UUID();
 	pageData.elements = pageData.elements.map(element => {
+		// 所有的元素也要单独复制
 		return copyElement(element)
 	})
 	return pageData;
 }
 
+// 初始化一个项目配置
 let getProjectConfig = function () {
 	let project = cloneDeep(projectConfig)
 	let onePage = getPageConfig()

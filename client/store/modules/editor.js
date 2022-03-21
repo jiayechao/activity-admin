@@ -2,9 +2,6 @@
 import { cloneDeep, merge } from 'lodash'
 import {getProjectConfig, getPageConfig, copyPage, getElementConfig, copyElement} from '@client/utils/dataModel'
 
-/**
- * 编辑器数据状态存储
- */
 const state = {
 	// 当前编辑器编辑工程项目数据
 	projectData: {
@@ -20,6 +17,268 @@ const state = {
 	currentHistoryIndex: -1,
 	activeAttrEditCollapse: ['1']
 };
+const getters = {
+	/**
+	 * 当前选中的页面index
+	 * @param state
+	 * @returns {*}
+	 */
+	currentPageIndex(state){
+		// 如果不存在页面返回-1
+		if(!state.projectData.pages){
+			return -1;
+		}
+		return state.projectData.pages.findIndex(v => {return v.uuid === state.activePageUUID})
+	},
+	/**
+	 * 当前选中的页面index
+	 * @param state
+	 * @returns {*}
+	 */
+	activeElementIndex(state){
+		// 如果不存在页面返回-1
+		if(!state.projectData.pages){
+			return -1;
+		}
+		let currentPageIndex = state.projectData.pages.findIndex(v => {return v.uuid === state.activePageUUID})
+		if(currentPageIndex === -1){
+			return -1;
+		}
+		return state.projectData.pages[currentPageIndex].elements.findIndex(v => {return v.uuid === state.activeElementUUID})
+	},
+	/**
+	 * 当前选中的页面
+	 */
+	activePage(){
+		// 如果不存在页面返回-1
+		if(!state.projectData.pages || !state.activePageUUID){
+			return {commonStyle: {}, config: {}};
+		}
+		return state.projectData.pages.find(v => {return v.uuid === state.activePageUUID})
+	},
+	/**
+	 * 当前选中元素
+	 */
+	activeElement(){
+		// 如果不存在页面返回-1
+		if(!state.projectData.pages){
+			return {commonStyle: {}, propsValue: {}};
+		}
+		let currentPageIndex = state.projectData.pages.findIndex(v => {return v.uuid === state.activePageUUID})
+		if(currentPageIndex === -1){
+			return {commonStyle: {}, propsValue: {}};
+		}
+		return state.projectData.pages[currentPageIndex].elements.find(v => {return v.uuid === state.activeElementUUID})
+	},
+	canUndo(state) {
+		return state.currentHistoryIndex > 0
+	},
+	canRedo(state) {
+		return state.historyCache.length > state.currentHistoryIndex + 1
+	}
+};
+
+const mutations = {
+	setPrjectData(state, data){
+		state.projectData = data;
+	},
+	setActivePageUUID(state, data){
+		state.activePageUUID = data;
+	},
+	setActiveElementUUID(state, data){
+		state.activeElementUUID = data;
+	},
+	/**
+	 * 更新项目主图
+	 * @param commit
+	 * @param url
+	 */
+	updateCoverImage(state, url){
+		state.projectData.coverImage = url
+	},
+	/**
+	 * 新增页面
+	 */
+	insertPage(state, {data, index}){
+		if(index){
+			state.projectData.pages.splice(index, 0, data) // 在选中页面的后面新增
+		}else{
+			state.projectData.pages.push(data) // 直接新增
+		}
+	},
+	/**
+	 * 删除页面
+	 */
+	deletePage(state, index){
+		state.projectData.pages.splice(index, 1);
+	},
+
+	// =============================元素相关========================================
+
+	/**
+	 * 往画板添加元素
+	 * @param state
+	 * @param elData
+	 */
+	addElement(state, elData) {
+		let index = state.projectData.pages.findIndex(v => {return v.uuid === state.activePageUUID})
+		state.projectData.pages[index].elements.push(elData);
+	},
+	/**
+	 * 往画板添加元素
+	 * @param state
+	 * @param elData  activeElementIndex
+	 */
+	deleteElement(state, uuid){
+		let activePage = getters.activePage(state)
+		let elementIndex = activePage.elements.findIndex(v => {return v.uuid === uuid})
+		activePage.elements.splice(elementIndex, 1)
+	},
+	/**
+	 * 重置元素样式，
+	 * @param commit
+	 * @param uuid
+	 * @param styleObject
+	 */
+	resetElementCommonStyle(state, style){
+		let activeElement = getters.activeElement(state)
+		activeElement.commonStyle = merge(activeElement.commonStyle, style)
+	},
+
+	/**
+	 * 添加动画到元素上
+	 * @param state
+	 * @param data
+	 */
+	addElementAnimate(state, data){
+		let activeElement = getters.activeElement(state)
+		activeElement.animations.push(data)
+	},
+	/**
+	 * 删除动画到元素上
+	 * @param state
+	 * @param index
+	 */
+	deleteElementAnimate(state, index){
+		let activeElement = getters.activeElement(state)
+		activeElement.animations.splice(index, 1)
+	},
+	/**
+	 * 添加事件
+	 * @param state
+	 * @param data
+	 */
+	addElementEvent(state, data){
+		let activeElement = getters.activeElement(state)
+		activeElement.events.push(data)
+	},
+	/**
+	 * 删除事件
+	 * @param state
+	 * @param index
+	 */
+	deleteElementEvent(state, index){
+		let activeElement = getters.activeElement(state)
+		activeElement.events.splice(index, 1)
+	},
+	/**
+	 * 改变元素zIndex
+	 * @param state
+	 * @param uuid
+	 * @param type layerUp上一层，layerDown下一层，layerTop置顶， layerBottom置底
+	 */
+	resetElementZIndex(state, {uuid, type}){
+		uuid = uuid || state.activeElementUUID;
+		let activePage = getters.activePage(state)
+		let currentElement = activePage.elements.find(v => {return v.uuid === uuid});
+		let itemZIndex = currentElement.commonStyle.zIndex;
+		let maxIndex = activePage.elements.length;
+		let mminIndex = 1;
+		let zIndexDirc = {
+			layerUp: Math.min(itemZIndex + 1, maxIndex),
+			layerDown: Math.max(itemZIndex - 1, mminIndex),
+			layerTop: maxIndex,
+			layerBottom: mminIndex,
+			set0: 0
+		}
+		if(zIndexDirc[type] === undefined) return;
+		let currentZIndex = zIndexDirc[type]
+		currentElement.commonStyle.zIndex = currentZIndex;
+		activePage.elements.forEach(item => {
+			if(uuid === item.uuid) return;
+			// 上面一位zIndex减一
+			if(type === 'layerUp' && item.commonStyle.zIndex === currentZIndex){
+				item.commonStyle.zIndex--
+			}
+			// 下面元素zIdex加一
+			if(type === 'layerDown' && item.commonStyle.zIndex === currentZIndex){
+				item.commonStyle.zIndex++
+			}
+			// 目标元素zIndex 以上的都减一
+			if(type === 'layerTop' && item.commonStyle.zIndex > itemZIndex){
+				item.commonStyle.zIndex--
+			}
+			// 目标元素zIndex以下的都加一
+			if((type === 'layerBottom' || type === 'set0') && item.commonStyle.zIndex < itemZIndex){
+				item.commonStyle.zIndex++
+			}
+		})
+	},
+
+	// ================================历史纪录========================================
+	/**
+	 * 新增一条历史纪录
+	 * @param state
+	 */
+	addHistoryCache(state) {
+		// 如果撤销过操作，那么必然会执行这一步，删掉被撤销的缓存
+		if (state.currentHistoryIndex + 1 < state.historyCache.length) {
+			state.historyCache.splice(state.currentHistoryIndex + 1)
+		}
+		// 缓存当前页面状态
+		state.historyCache.push({
+			projectData: cloneDeep(state.projectData),
+			activePageUUID: state.activePageUUID,
+			activeElementUUID: state.activeElementUUID
+		})
+		// 限制undo 纪录步数，最多支持100步操作undo
+		state.historyCache.splice(100)
+		state.currentHistoryIndex++
+	},
+	/**
+	 *
+	 * @param state
+	 */
+	editorUndo(state){
+		state.currentHistoryIndex--
+	},
+	/**
+	 *
+	 * @param state
+	 */
+	editorRedo(state){
+		state.currentHistoryIndex++
+	},
+	/**
+	 * 更新编辑器项目数据，从history中拿数据替换
+	 * @param state
+	 * @param data
+	 */
+	relapceEditorState(state, data){
+		state.projectData = cloneDeep(data.projectData)
+		state.activePageUUID = data.activePageUUID
+		state.activeElementUUID = data.activeElementUUID
+	},
+	/**
+	 * 设置编辑属性折叠面板展开收起状态
+	 * @param state
+	 * @param data
+	 */
+	updateActiveAttrEditCollapse(state, data){
+		state.activeAttrEditCollapse = [...data];
+	}
+};
+
 const actions = {
 	/**
 	 * 初始化编辑项目数据
@@ -74,13 +333,11 @@ const actions = {
 	 */
 	addPage({commit}, uuid){
 		let data = getPageConfig()
-		let index = -1;
+		let index = 0;
 		if(uuid){
 			index = state.projectData.pages.findIndex(v => {return v.uuid === uuid})
-		}else{
-			index = state.projectData.pages.length -1;
 		}
-		commit('insertPage', data, index);
+		commit('insertPage', {data, index});
 		commit('addHistoryCache')
 	},
 	/**
@@ -114,7 +371,7 @@ const actions = {
 	copyPage({commit}, uuid){
 		let pageData = state.projectData.pages.find(v => {return v.uuid === uuid})
 		let data = copyPage(pageData)
-		commit('insertPage', data)
+		commit('insertPage', {data})
 		commit('addHistoryCache')
 	},
 
@@ -276,264 +533,8 @@ const actions = {
 		commit('editorRedo')
 	}
 };
-const mutations = {
-	setPrjectData(state, data){
-		state.projectData = data;
-	},
-	setActivePageUUID(state, data){
-		state.activePageUUID = data;
-	},
-	setActiveElementUUID(state, data){
-		state.activeElementUUID = data;
-	},
-	/**
-	 * 更新项目主图
-	 * @param commit
-	 * @param url
-	 */
-	updateCoverImage(state, url){
-		state.projectData.coverImage = url
-	},
-	/**
-	 * 新增页面
-	 */
-	insertPage(state, data, index){
-		if(index){
-			state.projectData.pages.splice(index, 0, data)
-		}else{
-			state.projectData.pages.push(data)
-		}
-	},
-	/**
-	 * 删除页面
-	 */
-	deletePage(state, index){
-		state.projectData.pages.splice(index, 1);
-	},
 
-	// =============================元素相关========================================
 
-	/**
-	 * 往画板添加元素
-	 * @param state
-	 * @param elData
-	 */
-	addElement(state, elData) {
-		let index = state.projectData.pages.findIndex(v => {return v.uuid === state.activePageUUID})
-		state.projectData.pages[index].elements.push(elData);
-	},
-	/**
-	 * 往画板添加元素
-	 * @param state
-	 * @param elData  activeElementIndex
-	 */
-	deleteElement(state, uuid){
-		let activePage = getters.activePage(state)
-		let elementIndex = activePage.elements.findIndex(v => {return v.uuid === uuid})
-		activePage.elements.splice(elementIndex, 1)
-	},
-	/**
-	 * 重置元素样式，
-	 * @param commit
-	 * @param uuid
-	 * @param styleObject
-	 */
-	resetElementCommonStyle(state, style){
-		let activeElement = getters.activeElement(state)
-		activeElement.commonStyle = merge(activeElement.commonStyle, style)
-	},
-
-	/**
-	 * 添加动画到元素上
-	 * @param state
-	 * @param data
-	 */
-	addElementAnimate(state, data){
-		let activeElement = getters.activeElement(state)
-		activeElement.animations.push(data)
-	},
-	/**
-	 * 删除动画到元素上
-	 * @param state
-	 * @param index
-	 */
-	deleteElementAnimate(state, index){
-		let activeElement = getters.activeElement(state)
-		activeElement.animations.splice(index, 1)
-	},
-	/**
-	 * 添加事件
-	 * @param state
-	 * @param data
-	 */
-	addElementEvent(state, data){
-		let activeElement = getters.activeElement(state)
-		activeElement.events.push(data)
-	},
-	/**
-	 * 删除事件
-	 * @param state
-	 * @param index
-	 */
-	deleteElementEvent(state, index){
-		let activeElement = getters.activeElement(state)
-		activeElement.events.splice(index, 1)
-	},
-	/**
-	 * 改变元素zIndex
-	 * @param state
-	 * @param uuid
-	 * @param type layerUp上一层，layerDown下一层，layerTop置顶， layerBottom置底
-	 */
-	resetElementZIndex(state, {uuid, type}){
-		uuid = uuid || state.activeElementUUID;
-		let activePage = getters.activePage(state)
-		let currentElement = activePage.elements.find(v => {return v.uuid === uuid});
-		let itemZIndex = currentElement.commonStyle.zIndex;
-		let maxIndex = activePage.elements.length;
-		let mminIndex = 1;
-		let zIndexDirc = {
-			layerUp: Math.min(itemZIndex + 1, maxIndex),
-			layerDown: Math.max(itemZIndex - 1, mminIndex),
-			layerTop: maxIndex,
-			layerBottom: mminIndex,
-			set0: 0
-		}
-		if(zIndexDirc[type] === undefined) return;
-		let currentZIndex = zIndexDirc[type]
-		currentElement.commonStyle.zIndex = currentZIndex;
-		activePage.elements.forEach(item => {
-			if(uuid === item.uuid) return;
-			// 上面一位zIndex减一
-			if(type === 'layerUp' && item.commonStyle.zIndex === currentZIndex){
-				item.commonStyle.zIndex--
-			}
-			// 下面元素zIdex加一
-			if(type === 'layerDown' && item.commonStyle.zIndex === currentZIndex){
-				item.commonStyle.zIndex++
-			}
-			// 目标元素zIndex 以上的都减一
-			if(type === 'layerTop' && item.commonStyle.zIndex > itemZIndex){
-				item.commonStyle.zIndex--
-			}
-			// 目标元素zIndex以下的都加一
-			if((type === 'layerBottom' || type === 'set0') && item.commonStyle.zIndex < itemZIndex){
-				item.commonStyle.zIndex++
-			}
-		})
-	},
-
-	// ================================历史纪录========================================
-	/**
-	 * 新增一条历史纪录
-	 * @param state
-	 */
-	addHistoryCache(state){
-		if (state.currentHistoryIndex + 1 < state.historyCache.length) {
-			state.historyCache.splice(state.currentHistoryIndex + 1)
-		}
-		state.historyCache.push({
-			projectData: cloneDeep(state.projectData),
-			activePageUUID: state.activePageUUID,
-			activeElementUUID: state.activeElementUUID
-		})
-		// 限制undo 纪录步数，最多支持100步操作undo
-		state.historyCache.splice(100)
-		state.currentHistoryIndex++
-	},
-	/**
-	 *
-	 * @param state
-	 */
-	editorUndo(state){
-		state.currentHistoryIndex--
-	},
-	/**
-	 *
-	 * @param state
-	 */
-	editorRedo(state){
-		state.currentHistoryIndex++
-	},
-	/**
-	 * 更新编辑器项目数据，从history中拿数据替换
-	 * @param state
-	 * @param data
-	 */
-	relapceEditorState(state, data){
-		state.projectData = cloneDeep(data.projectData)
-		state.activePageUUID = data.activePageUUID
-		state.activeElementUUID = data.activeElementUUID
-	},
-	/**
-	 * 设置编辑属性折叠面板展开收起状态
-	 * @param state
-	 * @param data
-	 */
-	updateActiveAttrEditCollapse(state, data){
-		state.activeAttrEditCollapse = [...data];
-	}
-};
-const getters = {
-	/**
-	 * 当前选中的页面index
-	 * @param state
-	 * @returns {*}
-	 */
-	currentPageIndex(state){
-		// 如果不存在页面返回-1
-		if(!state.projectData.pages){
-			return -1;
-		}
-		return state.projectData.pages.findIndex(v => {return v.uuid === state.activePageUUID})
-	},
-	/**
-	 * 当前选中的页面index
-	 * @param state
-	 * @returns {*}
-	 */
-	activeElementIndex(state){
-		// 如果不存在页面返回-1
-		if(!state.projectData.pages){
-			return -1;
-		}
-		let currentPageIndex = state.projectData.pages.findIndex(v => {return v.uuid === state.activePageUUID})
-		if(currentPageIndex === -1){
-			return -1;
-		}
-		return state.projectData.pages[currentPageIndex].elements.findIndex(v => {return v.uuid === state.activeElementUUID})
-	},
-	/**
-	 * 当前选中的页面
-	 */
-	activePage(){
-		// 如果不存在页面返回-1
-		if(!state.projectData.pages || !state.activePageUUID){
-			return {commonStyle: {}, config: {}};
-		}
-		return state.projectData.pages.find(v => {return v.uuid === state.activePageUUID})
-	},
-	/**
-	 * 当前选中元素
-	 */
-	activeElement(){
-		// 如果不存在页面返回-1
-		if(!state.projectData.pages){
-			return {commonStyle: {}, propsValue: {}};
-		}
-		let currentPageIndex = state.projectData.pages.findIndex(v => {return v.uuid === state.activePageUUID})
-		if(currentPageIndex === -1){
-			return {commonStyle: {}, propsValue: {}};
-		}
-		return state.projectData.pages[currentPageIndex].elements.find(v => {return v.uuid === state.activeElementUUID})
-	},
-	canUndo(state) {
-		return state.currentHistoryIndex > 0
-	},
-	canRedo(state) {
-		return state.historyCache.length > state.currentHistoryIndex + 1
-	}
-};
 
 export default {
 	state,
