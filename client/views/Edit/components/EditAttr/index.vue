@@ -1,5 +1,5 @@
 <template>
-  <div v-if="currentElementProps.length">
+  <div class="pt-2 px-1" v-if="currentElementProps.length">
     <div class="attr-title marginB10 fontBold">组件属性</div>
     <el-form>
       <component

@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="pt-2 px-1">
     <h2 class="mb-1">组件库</h2>
     <div class="mb-2" v-for="(elType,index) in elConfig" :key="index">
       <h4 class="mb-1">{{elType.title}}</h4>

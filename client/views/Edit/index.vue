@@ -1,13 +1,29 @@
 <template>
-  <el-container>
-  <el-aside width="300px">
+  <el-container class="h-100">
+  <el-aside width="400px">
     <component-list></component-list>
   </el-aside>
   <el-main>
     <edit-area></edit-area>
   </el-main>
-  <el-aside width="300px">
-    <edit-attr></edit-attr>
+  <el-aside width="400px">
+    <el-tabs v-model="activeAttr">
+      <el-tab-pane label="属性" name="属性">
+        <edit-props></edit-props>
+      </el-tab-pane>
+      <el-tab-pane label="事件" name="事件">
+        <edit-event></edit-event>
+      </el-tab-pane>
+      <el-tab-pane label="动画" name="动画">
+        <edit-animate></edit-animate>
+      </el-tab-pane>
+      <el-tab-pane label="脚本" name="脚本">
+        <edit-script></edit-script>
+      </el-tab-pane>
+      <el-tab-pane label="页面" name="页面">
+        <edit-page></edit-page>
+      </el-tab-pane>
+    </el-tabs>
   </el-aside>
 </el-container>
 </template>
@@ -19,15 +35,19 @@ import {camelCase} from 'lodash'
 export default {
   components: {
     EditArea: () => import('./components/EditArea/index.vue'),
-    EditAttr: () => import('./components/EditAttr/index.vue'),
-    ComponentList: () => import('./components/ComponentList/index.vue')
+    ComponentList: () => import('./components/ComponentList/index.vue'),
+    EditPage: () => import('./components/EditAttr/EditPage.vue'),
+    EditScript: () => import('./components/EditAttr/EditPage.vue'),
+    EditEvent: () => import('./components/EditAttr/EditEvent.vue'),
+    EditAnimate: () => import('./components/EditAttr/EditAnimate.vue'),
+    EditProps: () => import('./components/EditAttr/EditProps/index.vue')
   },
   created() {
     this.$store.dispatch('setPrjectData')
   },
   data() {
     return {
-      
+      activeAttr: '页面'
     }
   },
   methods: {

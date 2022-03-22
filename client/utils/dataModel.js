@@ -50,7 +50,8 @@ let pageConfig = {
 	commonStyle: {
 		backgroundColor: '',
 		backgroundImage: '',
-		backgroundSize: 'cover'
+    backgroundSize: 'cover',
+    backgroundPosition: 'center'
 	},
 	config: {}
 }
@@ -134,7 +135,7 @@ let getProjectConfig = function () {
 }
 
 /**
- * 获取元素样式
+ * 获取样式(页面和元素)
  * @param styleObj
  * @param scalePoint 缩放比例
  */

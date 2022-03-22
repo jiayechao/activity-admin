@@ -125,7 +125,6 @@ const mutations = {
 		state.projectData.pages[index].elements.push(elData);
 	},
 	/**
-	 * 往画板添加元素
 	 * @param state
 	 * @param elData  activeElementIndex
 	 */
