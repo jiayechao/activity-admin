@@ -37,7 +37,7 @@ export default {
     EditArea: () => import('./components/EditArea/index.vue'),
     ComponentList: () => import('./components/ComponentList/index.vue'),
     EditPage: () => import('./components/EditAttr/EditPage.vue'),
-    EditScript: () => import('./components/EditAttr/EditPage.vue'),
+    EditScript: () => import('./components/EditAttr/EditScript.vue'),
     EditEvent: () => import('./components/EditAttr/EditEvent.vue'),
     EditAnimate: () => import('./components/EditAttr/EditAnimate.vue'),
     EditProps: () => import('./components/EditAttr/EditProps/index.vue')
@@ -47,7 +47,7 @@ export default {
   },
   data() {
     return {
-      activeAttr: '页面'
+      activeAttr: '属性'
     }
   },
   methods: {

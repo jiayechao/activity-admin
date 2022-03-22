@@ -1,12 +1,12 @@
 <template>
-  <div class="pt-2 px-1" v-if="currentElementProps.length">
-    <div class="attr-title marginB10 fontBold">组件属性</div>
+  <div v-if="currentElementProps.length">
+		<div class="fs-3 text-bold">组件属性</div>
     <el-form>
       <component
-              v-for="item in currentElementProps"
-              :key="item" :is="'attr-ad-' + item"
-              v-bind.sync="activeElement.propsValue"
-      />
+				v-for="item in currentElementProps"
+				:key="item" :is="'attr-ad-' + item"
+				v-bind.sync="activeElement.propsValue"
+      ></component>
     </el-form>
   </div>
 </template>

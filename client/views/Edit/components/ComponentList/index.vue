@@ -4,7 +4,7 @@
     <div class="mb-2" v-for="(elType,index) in elConfig" :key="index">
       <h4 class="mb-1">{{elType.title}}</h4>
       <div class="d-flex">
-        <div class="flex-center flex-column components-lib-item mx-1" v-for="(element,idx) in elType.components" :key="idx"
+        <div class="flex-center flex-column components-lib-item mr-1 mb-1" v-for="(element,idx) in elType.components" :key="idx"
           @click="handleClick(element)">
           <div class="lib-item-img mb-1"><i :class="[element.icon]"></i></div>
           <p class="lib-item-title">{{element.title}}</p>
@@ -32,6 +32,7 @@ export default {
       let props = this.getComponentProps(element.elName);
 			this.addElement({...element, needProps: props})
     },
+    // 把所有的默认参数拿过来
     getComponentProps(elName) {
       let elComponentData
       for (let key in componentList) {
@@ -58,7 +59,7 @@ h2 {
 }
 .components-lib-item {
   border: 1px solid #ccc;
-  width: 60px;
+  width: 80px;
   height: 60px;
   border-radius: 8px;
   transition: all .3s;

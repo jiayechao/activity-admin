@@ -4,12 +4,12 @@
     backgroundColor: '',
 		backgroundImage: '',
    -->
-  <el-descriptions class="edit-page" title="垂直带边框列表" direction="vertical" :column="1">
+  <el-descriptions class="edit-page" title="当前页样式" direction="vertical" :column="1">
     <el-descriptions-item label="页面背景色">
       <el-color-picker v-model="activePage.commonStyle.backgroundColor" show-alpha></el-color-picker>
     </el-descriptions-item>
     <el-descriptions-item label="页面背景图">
-      <el-button type="primary">图片占位</el-button>
+      <el-button class="mb-2" type="primary">图片库占位</el-button>
       <el-input v-model="activePage.commonStyle.backgroundImage" type="textarea" :rows="2" placeholder="请输入图片地址"></el-input>
     </el-descriptions-item>
   </el-descriptions>
