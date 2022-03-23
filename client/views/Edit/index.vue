@@ -4,6 +4,7 @@
     <component-list></component-list>
   </el-aside>
   <el-main>
+    <control-bar class="mb-1"></control-bar>
     <edit-area></edit-area>
   </el-main>
   <el-aside width="400px">
@@ -40,7 +41,8 @@ export default {
     EditScript: () => import('./components/EditAttr/EditScript.vue'),
     EditEvent: () => import('./components/EditAttr/EditEvent.vue'),
     EditAnimate: () => import('./components/EditAttr/EditAnimate.vue'),
-    EditProps: () => import('./components/EditAttr/EditProps/index.vue')
+    EditProps: () => import('./components/EditAttr/EditProps/index.vue'),
+    ControlBar: () => import('./components/ControlBar.vue')
   },
   created() {
     this.$store.dispatch('setPrjectData')

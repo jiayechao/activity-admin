@@ -1,5 +1,5 @@
 <template>
-  <div class="edit-area box-border pt-2 h-100">
+  <div class="edit-area box-border pt-2">
     <div class="edit-main bg-white" ref="view-panel" :style="{width: projectData.width+'px', height: projectData.height+'px'}">
       <div class="page-area h-100" :style="getCommonStyle(activePage.commonStyle)">
         <edit-shap 
@@ -42,6 +42,7 @@ export default {
 
 <style lang="less" scoped>
 .edit-area {
+  height: calc(100vh - 100px);
   margin: 0 auto;
   background: #eee;
   .edit-main {
