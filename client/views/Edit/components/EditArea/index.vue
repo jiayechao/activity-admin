@@ -7,7 +7,9 @@
           :key="el.uuid" 
           :defaultStyle="el.commonStyle"
           :style="getCommonStyle({width: el.commonStyle.width, height: el.commonStyle.height, left: el.commonStyle.left,top: el.commonStyle.top, position: el.commonStyle.position})"
-          :active="el.uuid === activeElementUUID">
+          :active="el.uuid === activeElementUUID"
+          @elementClick="elementClick(el.uuid)"
+          @resize="handleElementResize">
           <component :is="el.elName" :style="getCommonStyle({...el.commonStyle, top: 0, left: 0})" v-bind="el.propsValue"></component>
         </edit-shap>
       </div>
@@ -25,7 +27,7 @@ export default {
       projectData: state => state.editor.projectData,
       activeElementUUID: state => state.editor.activeElementUUID
     }),
-    ...mapGetters(['activePage'])
+    ...mapGetters(['activePage', 'activeElement'])
   },
   components: {
     EditShap: () => import('@client/components/EditShap/index.vue')
@@ -33,8 +35,16 @@ export default {
   methods: {
     getCommonStyle,
     ...mapMutations(['setActiveElementUUID']),
-    chooseElement(el) {
-      this.setActiveElementUUID(el.uuid)
+    elementClick(uuid) {
+      this.setActiveElementUUID(uuid)
+    },
+    handleElementResize(pos) {
+      if(!pos) {
+        this.$store.dispatch('addHistoryCache')
+        return
+      }
+      // 实时更新数据
+      this.activeElement.commonStyle = { ...pos }
     }
   }
 }

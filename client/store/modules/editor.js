@@ -14,7 +14,7 @@ const state = {
 	// 历史操作数据用于回退前进
 	historyCache: [],
 	// 回退前进指针
-	currentHistoryIndex: -1,
+	currentHistoryIndex: -1, // 历史指针每操作操作一次+1，每撤销一次-1
 	activeAttrEditCollapse: ['1']
 };
 const getters = {
@@ -230,8 +230,9 @@ const mutations = {
 	 * @param state
 	 */
 	addHistoryCache(state) {
-		// 如果撤销过操作，那么必然会执行这一步，删掉被撤销的缓存
+		// 如果撤销超过操作历史，那么就属于中间插入，直接删掉过时的历史记录
 		if (state.currentHistoryIndex + 1 < state.historyCache.length) {
+			debugger
 			state.historyCache.splice(state.currentHistoryIndex + 1)
 		}
 		// 缓存当前页面状态

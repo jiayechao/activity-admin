@@ -11,7 +11,8 @@ import { ceil, add, subtract } from 'lodash'
 
 export default {
   props: {
-    active: Boolean
+    active: Boolean,
+    defaultStyle: Object
   },
   computed: {
     ...mapState({
@@ -24,19 +25,25 @@ export default {
   methods: {
     startMove(e) {
       const { clientX: startX, clientY: startY } = e
-      const {left: originX, top: originY} = this.activeElement.commonStyle
-      console.log(startY,startX)
-       
+      const pos = {...this.defaultStyle}
+      const {left: originX, top: originY} = pos
+      const startTime = Date.now()
+      this.$emit('elementClick')
       const move = (event) => {
         const { clientX: curentX, clientY: currentY } = event
-        console.log(curentX, currentY, ceil(add(originX, subtract(curentX, startX))), ceil(add(originX, subtract(currentY, startY))))
-        this.activeElement.commonStyle.left = ceil(add(originX, subtract(curentX, startX)))
-        this.activeElement.commonStyle.top = ceil(add(originY, subtract(currentY, startY)))
+        pos.left = ceil(add(originX, subtract(curentX, startX)))
+        pos.top = ceil(add(originY, subtract(currentY, startY)))
+        this.$emit('resize', pos)
+      }
+      const up = () => {
+        if(subtract(Date.now(), startTime) > 200) {
+          this.$emit('resize')
+        }
+        document.removeEventListener('mousemove', move, false)
+        document.removeEventListener('mouseup', up, false)
       }
       document.addEventListener('mousemove', move, false)
-      document.addEventListener('mouseup', () => {
-        document.removeEventListener('mousemove', move)
-      })
+      document.addEventListener('mouseup', up, false)
     }
   }
 }
@@ -46,6 +53,7 @@ export default {
 .edit-shap {
   &.active {
     border: 1px dashed #25A589;
+    cursor: move;
   }
 }
 </style>

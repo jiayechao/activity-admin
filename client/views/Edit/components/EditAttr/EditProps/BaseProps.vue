@@ -86,7 +86,7 @@
 	export default {
     data() {
       return {
-        activeNames: 1,
+        activeNames: '1',
         borderTypes: [
           {
             value: 'solid',
