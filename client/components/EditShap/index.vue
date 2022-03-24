@@ -29,6 +29,7 @@ export default {
       const {left: originX, top: originY} = pos
       const startTime = Date.now()
       this.$emit('elementClick')
+      e.preventDefault()
       const move = (event) => {
         const { clientX: curentX, clientY: currentY } = event
         pos.left = ceil(add(originX, subtract(curentX, startX)))

@@ -3,9 +3,11 @@ import Vuex from 'vuex'
 
 // 各个模块
 import editor from './modules/editor'
+import local from './modules/local'
 
 const modules = {
-  editor,
+	editor,
+	local
 }
 
 const state = {

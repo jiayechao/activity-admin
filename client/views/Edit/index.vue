@@ -4,7 +4,7 @@
     <component-list></component-list>
   </el-aside>
   <el-main>
-    <control-bar class="mb-1"></control-bar>
+    <control-bar class="mb-1" @save="saveProject"></control-bar>
     <edit-area></edit-area>
   </el-main>
   <el-aside width="400px">
@@ -45,7 +45,11 @@ export default {
     ControlBar: () => import('./components/ControlBar.vue')
   },
   created() {
-    this.$store.dispatch('setPrjectData')
+    var currentProject = null
+    if(this.$route.query.id) {
+      currentProject = this.$store.state.local.projectList.find(item => item.id === this.$route.query.id)
+    }
+    this.$store.dispatch('setPrjectData', currentProject)
   },
   data() {
     return {
@@ -62,26 +66,27 @@ export default {
       console.log(props)
 			this.$store.dispatch('addElement', {...element, needProps: props})
     },
-    /**
-			 * 根据elname获取组件默认props数据
-			 * @param elName
-			 */
-			getComponentProps(elName) {
-        let elComponentData
-				for (let key in componentList) {
-					if (key.toLowerCase() === camelCase(elName).toLowerCase()) {
-						elComponentData = componentList[key];
-						break;
-					}
-				}
-				if (!elComponentData) return {}
+    // 获取默认props数据
+    getComponentProps(elName) {
+      let elComponentData
+      for (let key in componentList) {
+        if (key.toLowerCase() === camelCase(elName).toLowerCase()) {
+          elComponentData = componentList[key];
+          break;
+        }
+      }
+      if (!elComponentData) return {}
 
-				let props = {}
-				for (let key in elComponentData.props) {
-					props[key] = [Object, Array].includes(elComponentData.props[key].type) ? elComponentData.props[key].default() : elComponentData.props[key].default
-				}
-				return props;
-			},
+      let props = {}
+      for (let key in elComponentData.props) {
+        props[key] = [Object, Array].includes(elComponentData.props[key].type) ? elComponentData.props[key].default() : elComponentData.props[key].default
+      }
+      return props;
+    },
+    // 保存
+    saveProject() {
+      this.$store.commit('addProject', this.$store.state.editor.projectData)
+    }
   }
 }
 </script>
